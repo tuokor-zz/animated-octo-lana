@@ -1,4 +1,5 @@
 from RF24 import * 
+import time
 
 radio = RF24(RPI_V2_GPIO_P1_15, RPI_V2_GPIO_P1_24, BCM2835_SPI_SPEED_8MHZ)
 
@@ -26,3 +27,4 @@ while True:
         print "data length:", len
         data = radio.read(len)
         print('Got data={0} from pipe={1}'.format(data, pipe[1]))
+    time.sleep(1)
