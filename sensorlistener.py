@@ -17,11 +17,12 @@ radio.startListening()
 radio.printDetails()
 
 while True:
-    pipe = radio.available();
+    pipe = radio.available_pipe();
     #print("pipe value:",pipe)
-    if(pipe == True):
+    if(pipe[0] == True):
         done = False
         data = None
         len = radio.getDynamicPayloadSize()
+        print "data length:", len
         data = radio.read(len)
-        print('Got data=', data, ' from pipe=', pipe)
+        print('Got data={0} from pipe={1}'.format(data, pipe[1]))
