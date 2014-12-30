@@ -13,6 +13,7 @@ const uint64_t writepipe = 0xF0F0F0F0D2LL;
 
 OneWire ds(ONE_WIRE_BUS);
 
+byte dsAddress[8];
 
 void setup() {
   Serial.begin(57600);
@@ -26,6 +27,7 @@ void setup() {
   radio.openWritingPipe(writepipe);
   radio.printDetails();
   
+  ds.search(dsAddress);
 }
 
 void loop() {
@@ -33,7 +35,7 @@ void loop() {
   float temp = readTemp();
   Serial.println(temp);
   char data[10];
-  dtostrf(temp, 3,3,data);
+  dtostrf(temp, 4,2,data);
   radio.write(data, sizeof(data));
   delay(2000);
 }
@@ -46,28 +48,28 @@ float readTemp() {
   byte addr[8];
   float celsius, fahrenheit;
   
-  if ( !ds.search(addr)) {
+  /*if ( !ds.search(addr)) {
     Serial.println("No more addresses.");
     Serial.println();
     ds.reset_search();
     delay(250);
     return 0;
-  }
+  }*/
   
   Serial.print("ROM =");
   for( i = 0; i < 8; i++) {
     Serial.write(' ');
-    Serial.print(addr[i], HEX);
+    Serial.print(dsAddress[i], HEX);
   }
 
-  if (OneWire::crc8(addr, 7) != addr[7]) {
+  if (OneWire::crc8(dsAddress, 7) != dsAddress[7]) {
       Serial.println("CRC is not valid!");
       return 0;
   }
   Serial.println();
  
   // the first ROM byte indicates which chip
-  switch (addr[0]) {
+  switch (dsAddress[0]) {
     case 0x10:
       Serial.println("  Chip = DS18S20");  // or old DS1820
       type_s = 1;
@@ -83,17 +85,17 @@ float readTemp() {
     default:
       Serial.println("Device is not a DS18x20 family device.");
       return 0;
-  } 
+  }
 
   ds.reset();
-  ds.select(addr);
+  ds.select(dsAddress);
   ds.write(0x44, 1);        // start conversion, with parasite power on at the end
   
   delay(1000);     // maybe 750ms is enough, maybe not
   // we might do a ds.depower() here, but the reset will take care of it.
   
   present = ds.reset();
-  ds.select(addr);    
+  ds.select(dsAddress);    
   ds.write(0xBE);         // Read Scratchpad
 
   Serial.print("  Data = ");
