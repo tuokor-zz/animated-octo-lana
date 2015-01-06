@@ -10,7 +10,7 @@ class DataSender:
         self.phant = dict()
         self.running = True
         self._manager = SyncManager()
-        self._manager.start(self._mgr_init())
+        self._manager.start(self._mgr_init)
         self._que = self._manager.Queue()
         self._process = Process(target=self.up, args=(self._que,))
         self._process.start()
@@ -20,15 +20,15 @@ class DataSender:
         print("initialized manager")
 
     def up(self,que):
+        
         def stop(val,val2):
-            print("stop called {0}".format(self.running))
+            print "process SIGINT stopping"
             self.running = False
-            print("running={0}".format(self.running))
 
         signal.signal(signal.SIGINT, stop)
         print('datauploader started')
         while self.running or not que.empty():
-            print("state:{0} que={1}".format(self.running, que.empty()))
+            print("running:{0} que={1}".format(self.running, que.empty()))
             item = que.get(True)
             print("got item={0}".format(item))
             que.task_done()
@@ -48,6 +48,7 @@ class DataSender:
     
     def stop(self):
         print("shutting down sender")
+        self.running = False
         self._que.join()
         self._process.terminate()
 
@@ -55,7 +56,7 @@ if __name__ == '__main__':
     sender = DataSender()
     val = 0
     try:
-        while True:
+        while val < 30:
             val = val+1
             print("adding new item to que={0}".format(val))
             sender.send("item {0}".format(val))
