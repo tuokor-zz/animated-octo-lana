@@ -36,9 +36,9 @@ class DataSender:
         signal.signal(signal.SIGINT, stop)
         print('datauploader started')
         while self.running or not que.empty():
-            print("running:{0} que={1}".format(self.running, que.empty()))
-            item = que.get(True)
-            print("got item={0}".format(item))
+            item = json.loads(que.get(True))
+            print("handling item={0}".format(item))
+            self.httpsend(item)
             que.task_done()
             time.sleep(2)
         print("datauploader process terminating...")
@@ -64,14 +64,18 @@ if __name__ == '__main__':
     sender = DataSender('phant.json')
     sender.start()
     val = 0
+    sample = {'node_id': 'TEST', 'data_type': 'float', 'value': val}
     try:
         while val < 30:
             val = val+1
-            print("adding new item to que={0}".format(val))
-            sender.send("item {0}".format(val))
+            sample['value'] = val
+            in_json = json.dumps(sample)
+            print("adding new item to que={0}".format(in_json))
+            sender.send(in_json)
             if val % 2 == 0:
-                print("main thread will sleep now for 3 seconds")
-                time.sleep(3)
+                print("main thread will sleep now for 2 seconds")
+                time.sleep(2)
     except KeyboardInterrupt:
         print("keyboard interrupt")
         sender.stop()
+    sender.stop()
