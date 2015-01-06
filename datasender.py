@@ -61,7 +61,8 @@ class DataSender:
         self._process.terminate()
 
 if __name__ == '__main__':
-    sender = DataSender()
+    sender = DataSender('phant.json')
+    sender.start()
     val = 0
     try:
         while val < 30:
