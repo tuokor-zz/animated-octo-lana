@@ -2,14 +2,22 @@ from multiprocessing import Process, Manager
 from multiprocessing.managers import SyncManager
 import time
 import signal
+import json
+import urllib
+import urllib2
 
 class DataSender:
 
-
-    def __init__(self):
-        self.phant = dict()
+    def __init__(self,phantfile):
+        try:
+            self.phant = json.load(open(phantfile, 'r'))
+        except IOError:
+            raise ValueError("Invalid phantfile location")
         self.running = True
         self._manager = SyncManager()
+
+
+    def start(self):
         self._manager.start(self._mgr_init)
         self._que = self._manager.Queue()
         self._process = Process(target=self.up, args=(self._que,))
@@ -40,10 +48,10 @@ class DataSender:
 
     def httpsend(self, data):
         postdata = urllib.urlencode(data)
-        headers = {'Phant-Private-Key': phant['privateKey'] }
-        req = urllib2.Request(phant['inputUrl'], postdata, headers)
+        headers = {'Phant-Private-Key': self.phant['privateKey'] }
+        req = urllib2.Request(self.phant['inputUrl'], postdata, headers)
         res = urllib2.urlopen(req)
-        content = resp.read()
+        content = res.read()
         print("response: {0}".format(content))
     
     def stop(self):
